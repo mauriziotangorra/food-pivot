@@ -150,6 +150,19 @@ export default function TicketDetailModal({ ticket, onClose, onUpdated, onDownlo
           </div>
 
           <div className="flex-1 overflow-y-auto p-12 space-y-12">
+            <section className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6">
+              <h4 className="font-black text-xl text-slate-800 mb-5">Parametri {ticket.recordType === 'complaint' ? 'Reclamo' : 'Non-conformità'}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <p><span className="block text-[9px] font-black uppercase text-slate-400">Tipo</span><strong>{ticket.issueType || 'N/A'}</strong></p>
+                <p><span className="block text-[9px] font-black uppercase text-slate-400">Sotto-tipo</span><strong>{ticket.issueSubtype || 'N/A'}</strong></p>
+                <p><span className="block text-[9px] font-black uppercase text-slate-400">Gravità</span><strong>{ticket.severity || 'N/A'}</strong></p>
+                <p><span className="block text-[9px] font-black uppercase text-slate-400">Rilevato da</span><strong>{ticket.foundBy || 'N/A'}</strong></p>
+                <p><span className="block text-[9px] font-black uppercase text-slate-400">Responsabile</span><strong>{ticket.resolutionManager || 'N/A'}</strong></p>
+                <p><span className="block text-[9px] font-black uppercase text-slate-400">Fornitore</span><strong>{ticket.supplier || 'N/A'}</strong></p>
+                <p className="md:col-span-3"><span className="block text-[9px] font-black uppercase text-slate-400">Analisi delle cause</span><strong>{ticket.analysisCauses || 'N/A'}</strong></p>
+                <p className="md:col-span-3"><span className="block text-[9px] font-black uppercase text-slate-400">Azioni</span><strong>{ticket.immediateAction || ticket.correctiveAction || 'N/A'}</strong></p>
+              </div>
+            </section>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
                 <div className="flex justify-between items-center">

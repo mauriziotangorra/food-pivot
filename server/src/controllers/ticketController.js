@@ -18,9 +18,28 @@ const TICKET_SELECT = `
     t.batch_number AS batchNumber,
     t.expiry_date  AS expiryDate,
     t.subject,
+    t.record_type AS recordType,
+    t.reference_document AS referenceDocument,
+    t.supplier,
+    t.issue_type AS issueType,
+    t.issue_subtype AS issueSubtype,
+    t.severity,
+    t.found_by AS foundBy,
+    t.edited_by AS editedBy,
+    t.analysis_causes AS analysisCauses,
+    t.resolution_manager AS resolutionManager,
+    t.corrective_action AS correctiveAction,
+    t.immediate_action AS immediateAction,
+    t.improvement_objectives AS improvementObjectives,
+    t.expected_closing_date AS expectedClosingDate,
+    t.closing_date AS closingDate,
+    t.effectiveness_check AS effectivenessCheck,
+    t.effectiveness_verification_date AS effectivenessVerificationDate,
+    t.origin,
+    t.complaint_assessment AS complaintAssessment,
     t.status,
-    t.created_at   AS createdAt,
-    t.resolved_at  AS resolvedAt
+    t.created_at AS createdAt,
+    t.resolved_at AS resolvedAt
   FROM tickets t
   JOIN customers c ON c.id = t.customer_id
   JOIN contacts ct  ON ct.id = t.contact_id
@@ -41,6 +60,25 @@ function normalizeTicketInput(body = {}) {
     expiryDate: (body.expiryDate || '').trim(),
     batchNumber: (body.batchNumber || '').trim(),
     subject: (body.subject || '').trim(),
+    recordType: body.recordType === 'complaint' ? 'complaint' : 'non_conformity',
+    referenceDocument: (body.referenceDocument || '').trim(),
+    supplier: (body.supplier || '').trim(),
+    issueType: (body.issueType || '').trim(),
+    issueSubtype: (body.issueSubtype || '').trim(),
+    severity: (body.severity || '').trim(),
+    foundBy: (body.foundBy || '').trim(),
+    editedBy: (body.editedBy || '').trim(),
+    analysisCauses: (body.analysisCauses || '').trim(),
+    resolutionManager: (body.resolutionManager || '').trim(),
+    correctiveAction: (body.correctiveAction || '').trim(),
+    immediateAction: (body.immediateAction || '').trim(),
+    improvementObjectives: (body.improvementObjectives || '').trim(),
+    expectedClosingDate: (body.expectedClosingDate || '').trim() || null,
+    closingDate: (body.closingDate || '').trim() || null,
+    effectivenessCheck: body.effectivenessCheck ? 1 : 0,
+    effectivenessVerificationDate: (body.effectivenessVerificationDate || '').trim() || null,
+    origin: (body.origin || '').trim(),
+    complaintAssessment: (body.complaintAssessment || '').trim(),
     status: STATUSES.includes(body.status) ? body.status : 'Aperto',
   };
 
@@ -127,7 +165,7 @@ async function getTicketOr404(res, id) {
 }
 
 async function listTickets(req, res) {
-  const { search = '', status = 'Tutti' } = req.query;
+  const { search = '', status = 'Tutti', recordType } = req.query;
   const clauses = [];
   const params = [];
 
@@ -139,6 +177,10 @@ async function listTickets(req, res) {
   if (status && status !== 'Tutti') {
     clauses.push('t.status = ?');
     params.push(status);
+  }
+  if (recordType === 'complaint' || recordType === 'non_conformity') {
+    clauses.push('t.record_type = ?');
+    params.push(recordType);
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
@@ -192,9 +234,16 @@ async function createTicket(req, res) {
     const resolvedAt = data.status === 'Risolto' ? new Date() : null;
 
     await conn.query(
-      `INSERT INTO tickets (id, customer_id, contact_id, product_id, batch_number, expiry_date, subject, status, created_by, resolved_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`,
-      [id, customerId, contactId, productId, data.batchNumber, data.expiryDate, data.subject, data.status, req.user.id, resolvedAt]
+      `INSERT INTO tickets (id, customer_id, contact_id, product_id, batch_number, expiry_date, subject, record_type,
+      reference_document, supplier, issue_type, issue_subtype, severity, found_by, edited_by, analysis_causes, resolution_manager,
+       corrective_action, immediate_action, improvement_objectives, expected_closing_date, closing_date,
+       effectiveness_check, effectiveness_verification_date, origin, complaint_assessment, status, created_by, resolved_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [id, customerId, contactId, productId, data.batchNumber, data.expiryDate, data.subject, data.recordType,
+        data.referenceDocument, data.supplier, data.issueType, data.issueSubtype, data.severity, data.foundBy, data.editedBy,
+        data.analysisCauses, data.resolutionManager, data.correctiveAction, data.immediateAction,
+        data.improvementObjectives, data.expectedClosingDate, data.closingDate, data.effectivenessCheck,
+        data.effectivenessVerificationDate, data.origin, data.complaintAssessment, data.status, req.user.id, resolvedAt]
     );
     await conn.commit();
     const ticket = await getTicketOr404(res, id);
@@ -231,8 +280,16 @@ async function updateTicket(req, res) {
     }
 
     await conn.query(
-      `UPDATE tickets SET customer_id=?, contact_id=?, product_id=?, batch_number=?, expiry_date=?, subject=?, status=?, resolved_at=? WHERE id=?`,
-      [customerId, contactId, productId, data.batchNumber, data.expiryDate, data.subject, data.status, resolvedAt, id]
+      `UPDATE tickets SET customer_id=?, contact_id=?, product_id=?, batch_number=?, expiry_date=?, subject=?, record_type=?,
+      reference_document=?, supplier=?, issue_type=?, issue_subtype=?, severity=?, found_by=?, edited_by=?, analysis_causes=?,
+       resolution_manager=?, corrective_action=?, immediate_action=?, improvement_objectives=?, expected_closing_date=?,
+       closing_date=?, effectiveness_check=?, effectiveness_verification_date=?, origin=?, complaint_assessment=?,
+       status=?, resolved_at=? WHERE id=?`,
+      [customerId, contactId, productId, data.batchNumber, data.expiryDate, data.subject, data.recordType,
+        data.referenceDocument, data.supplier, data.issueType, data.issueSubtype, data.severity, data.foundBy, data.editedBy,
+        data.analysisCauses, data.resolutionManager, data.correctiveAction, data.immediateAction,
+        data.improvementObjectives, data.expectedClosingDate, data.closingDate, data.effectivenessCheck,
+        data.effectivenessVerificationDate, data.origin, data.complaintAssessment, data.status, resolvedAt, id]
     );
     await conn.commit();
     const ticket = await getTicketOr404(res, id);
