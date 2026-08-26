@@ -33,4 +33,7 @@ COPY server/ ./
 COPY --from=client-build /app/client/dist /app/client/dist
 
 EXPOSE 4000
-CMD ["node", "src/server.js"]
+# Applies the schema (CREATE ... IF NOT EXISTS) and seeds the admin account
+# (skipped if it already exists) before every boot — both are idempotent,
+# so this removes the need to run them manually via `railway run`.
+CMD ["npm", "run", "deploy"]
