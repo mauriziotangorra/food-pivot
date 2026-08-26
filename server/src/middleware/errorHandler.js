@@ -13,7 +13,10 @@ function errorHandler(err, req, res, next) {
   }
 
   console.error(err);
-  res.status(err.status || 500).json({ message: err.message || 'Errore interno del server.' });
+  // Anything reaching here is an unexpected failure (DB connectivity, etc.) —
+  // never forward its raw message to the client, it can leak internals
+  // (connection strings, internal IPs, driver details).
+  res.status(500).json({ message: 'Errore interno del server. Riprova più tardi.' });
 }
 
 module.exports = errorHandler;
