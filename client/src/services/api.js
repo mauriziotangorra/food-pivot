@@ -25,7 +25,9 @@ client.interceptors.response.use(
 
 export function attachmentUrl(url) {
   const token = localStorage.getItem('ifp_token');
-  const base = url.startsWith('http') ? url : `${API_BASE}${url}`;
+  const base = url.startsWith('http')
+    ? url
+    : `${API_BASE.replace(/\/$/, '')}${url.startsWith('/api/') ? url.slice(4) : url}`;
   return `${base}${base.includes('?') ? '&' : '?'}token=${encodeURIComponent(token || '')}`;
 }
 

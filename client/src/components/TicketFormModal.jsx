@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, User, Package, History } from 'lucide-react';
 
 const EMPTY_FORM = {
+  recordType: 'non_conformity',
   customerName: '',
   contactFirstName: '',
   contactLastName: '',
@@ -16,14 +17,19 @@ const EMPTY_FORM = {
   status: 'Aperto',
 };
 
-export default function TicketFormModal({ ticket, onClose, onSubmit }) {
+function Field({ label, name, value, onChange, type = 'text', options }) {
+  const common = { name, value: value || '', onChange, className: 'w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-4 focus:ring-blue-500/10' };
+  return <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>{options ? <select {...common}>{options.map((option) => <option key={option} value={option}>{option || 'Seleziona'}</option>)}</select> : type === 'textarea' ? <textarea {...common} rows="3" /> : <input {...common} type={type} />}</div>;
+}
+
+export default function TicketFormModal({ ticket, recordType = 'non_conformity', onClose, onSubmit }) {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setFormData(ticket ? { ...EMPTY_FORM, ...ticket } : EMPTY_FORM);
-  }, [ticket]);
+    setFormData(ticket ? { ...EMPTY_FORM, ...ticket } : { ...EMPTY_FORM, recordType });
+  }, [ticket, recordType]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -139,6 +145,33 @@ export default function TicketFormModal({ ticket, onClose, onSubmit }) {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Oggetto Segnalazione</label>
               <textarea required name="subject" value={formData.subject} onChange={handleChange} rows="4" className="w-full px-6 py-5 bg-slate-50 border border-slate-200 rounded-[1.5rem] font-medium outline-none focus:ring-4 focus:ring-blue-500/10"></textarea>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+              <History size={18} className="text-blue-600" />
+              <h3 className="font-black text-sm uppercase tracking-widest text-slate-800">{formData.recordType === 'complaint' ? 'Parametri Reclamo' : 'Parametri Non-conformità'}</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Field label="Paragrafo o documento di riferimento" name="referenceDocument" value={formData.referenceDocument} onChange={handleChange} type="textarea" />
+              <Field label="Fornitore" name="supplier" value={formData.supplier} onChange={handleChange} />
+              <Field label={formData.recordType === 'complaint' ? 'Tipo reclamo' : 'Tipo non-conformità'} name="issueType" value={formData.issueType} onChange={handleChange} options={formData.recordType === 'complaint' ? ['', 'Corpi estranei', 'Conformità alle specifiche', 'Etichettatura', 'Stoccaggio', 'Imballaggio', 'Analitico', 'Sicurezza prodotto'] : ['', 'Prodotto', 'Processo', 'Sistema', 'Fornitore', 'Altro']} />
+              <Field label="Tipo, se applicabile" name="issueSubtype" value={formData.issueSubtype} onChange={handleChange} />
+              <Field label="Gravità" name="severity" value={formData.severity} onChange={handleChange} options={formData.recordType === 'complaint' ? ['', 'Critica', 'Secondaria', 'Marginale', 'Infondata'] : ['', 'Critica', 'Secondaria', 'Marginale']} />
+              {formData.recordType === 'complaint' && <Field label="Esito reclamo" name="complaintAssessment" value={formData.complaintAssessment} onChange={handleChange} options={['', 'Fondato', 'Infondato', 'In valutazione']} />}
+              <Field label="Rilevato da" name="foundBy" value={formData.foundBy} onChange={handleChange} />
+              <Field label="Modificato da" name="editedBy" value={formData.editedBy} onChange={handleChange} />
+              <Field label="Responsabile risoluzione" name="resolutionManager" value={formData.resolutionManager} onChange={handleChange} />
+              {formData.recordType === 'non_conformity' && <Field label="Origine NC" name="origin" value={formData.origin} onChange={handleChange} options={['', 'Reclamo', 'Segnalazione interna', 'Ispezione RSQ', 'Ispezione ente ufficiale', 'Audit di sistema', 'Aggiornamento normativo', 'Altro']} />}
+              <Field label="Data chiusura prevista" name="expectedClosingDate" value={formData.expectedClosingDate} onChange={handleChange} type="date" />
+              <Field label="Data chiusura" name="closingDate" value={formData.closingDate} onChange={handleChange} type="date" />
+              <Field label="Data verifica efficacia" name="effectivenessVerificationDate" value={formData.effectivenessVerificationDate} onChange={handleChange} type="date" />
+              <label className="flex items-center gap-3 text-sm font-bold text-slate-600 pt-7"><input type="checkbox" name="effectivenessCheck" checked={!!formData.effectivenessCheck} onChange={(e) => setFormData((prev) => ({ ...prev, effectivenessCheck: e.target.checked }))} /> Verifica efficacia entro 3 mesi</label>
+              <Field label="Analisi delle cause" name="analysisCauses" value={formData.analysisCauses} onChange={handleChange} type="textarea" />
+              <Field label="Azioni correttive" name="correctiveAction" value={formData.correctiveAction} onChange={handleChange} type="textarea" />
+              <Field label="Azione immediata" name="immediateAction" value={formData.immediateAction} onChange={handleChange} type="textarea" />
+              <Field label="Obiettivi di miglioramento" name="improvementObjectives" value={formData.improvementObjectives} onChange={handleChange} type="textarea" />
             </div>
           </div>
 

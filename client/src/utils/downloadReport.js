@@ -107,6 +107,24 @@ export async function downloadTicketReport(ticket) {
           <p class="text-sm text-slate-700 leading-relaxed italic p-4 border border-slate-100 rounded-xl">"${ticket.subject}"</p>
       </div>
 
+      <div class="mb-10">
+          <h3 class="text-xs font-black text-slate-800 uppercase border-b-2 border-slate-200 pb-2 mb-4">Parametri ${ticket.recordType === 'complaint' ? 'Reclamo' : 'Non-conformità'}</h3>
+          <div class="grid grid-cols-2 gap-4 text-xs font-bold bg-slate-50 p-5 rounded-xl">
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Tipo</p><p>${ticket.issueType || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Sotto-tipo</p><p>${ticket.issueSubtype || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Gravità</p><p>${ticket.severity || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Rilevato da</p><p>${ticket.foundBy || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Responsabile risoluzione</p><p>${ticket.resolutionManager || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Fornitore</p><p>${ticket.supplier || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Chiusura prevista</p><p>${ticket.expectedClosingDate || 'N/A'}</p></div>
+            <div><p class="text-slate-400 text-[9px] uppercase mb-1">Chiusura</p><p>${ticket.closingDate || 'N/A'}</p></div>
+            <div class="col-span-2"><p class="text-slate-400 text-[9px] uppercase mb-1">Analisi cause</p><p>${ticket.analysisCauses || 'N/A'}</p></div>
+            <div class="col-span-2"><p class="text-slate-400 text-[9px] uppercase mb-1">Azione correttiva</p><p>${ticket.correctiveAction || 'N/A'}</p></div>
+            <div class="col-span-2"><p class="text-slate-400 text-[9px] uppercase mb-1">Azione immediata</p><p>${ticket.immediateAction || 'N/A'}</p></div>
+            <div class="col-span-2"><p class="text-slate-400 text-[9px] uppercase mb-1">Obiettivi di miglioramento</p><p>${ticket.improvementObjectives || 'N/A'}</p></div>
+          </div>
+      </div>
+
       <div class="mb-10 break-inside-avoid">
           <h3 class="text-xs font-black text-slate-800 uppercase border-b-2 border-slate-200 pb-2 mb-4">Evidenze Fotografiche (${photosWithBase64.length})</h3>
           <div class="grid grid-cols-2 gap-6">

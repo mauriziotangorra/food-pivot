@@ -9,6 +9,7 @@ import TicketCard from '../components/TicketCard';
 import TicketFormModal from '../components/TicketFormModal';
 import TicketDetailModal from '../components/TicketDetailModal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import ProtocolTypeModal from '../components/ProtocolTypeModal';
 
 const POLL_INTERVAL_MS = 15000;
 
@@ -23,16 +24,18 @@ export default function DashboardPage() {
   const [editingTicket, setEditingTicket] = useState(null);
   const [viewingTicket, setViewingTicket] = useState(null);
   const [ticketToDelete, setTicketToDelete] = useState(null);
+  const [recordType, setRecordType] = useState('non_conformity');
+  const [isTypePickerOpen, setIsTypePickerOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const data = await ticketsApi.list({ search: searchTerm, status: filterStatus });
+      const data = await ticketsApi.list({ search: searchTerm, status: filterStatus, recordType });
       setTickets(data);
       setLastSync(new Date());
     } catch (error) {
       console.error('Errore nel recupero dei ticket:', error);
     }
-  }, [searchTerm, filterStatus]);
+  }, [searchTerm, filterStatus, recordType]);
 
   useEffect(() => {
     refresh();
@@ -47,11 +50,18 @@ export default function DashboardPage() {
   }, [viewingTicket?.id]);
 
   const handleCreateOrUpdate = async (formData) => {
+    let savedTicket;
     if (editingTicket) {
-      await ticketsApi.update(editingTicket.id, formData);
+      savedTicket = await ticketsApi.update(editingTicket.id, formData);
     } else {
-      await ticketsApi.create(formData);
+      savedTicket = await ticketsApi.create(formData);
     }
+    setTickets((currentTickets) => {
+      if (editingTicket) {
+        return currentTickets.map((ticket) => (ticket.id === savedTicket.id ? savedTicket : ticket));
+      }
+      return [savedTicket, ...currentTickets];
+    });
     setIsFormOpen(false);
     setEditingTicket(null);
     await refresh();
@@ -75,9 +85,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <Navbar lastSync={lastSync} onNewTicket={() => { setEditingTicket(null); setIsFormOpen(true); }} />
+      <Navbar lastSync={lastSync} onNewTicket={() => setIsTypePickerOpen(true)} />
 
       <main className="max-w-7xl mx-auto px-4 py-10">
+        <div className="flex gap-2 mb-8 p-1 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm">
+          <button onClick={() => setRecordType('non_conformity')} className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest ${recordType === 'non_conformity' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-700'}`}>Non-conformità</button>
+          <button onClick={() => setRecordType('complaint')} className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest ${recordType === 'complaint' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-700'}`}>Reclami</button>
+        </div>
         <StatsBar tickets={tickets} />
 
         <SearchFilterBar
@@ -110,8 +124,16 @@ export default function DashboardPage() {
       {isFormOpen && (
         <TicketFormModal
           ticket={editingTicket}
+            recordType={editingTicket?.recordType || recordType}
           onClose={() => { setIsFormOpen(false); setEditingTicket(null); }}
           onSubmit={handleCreateOrUpdate}
+        />
+      )}
+
+      {isTypePickerOpen && (
+        <ProtocolTypeModal
+          onClose={() => setIsTypePickerOpen(false)}
+          onSelect={(type) => { setRecordType(type); setEditingTicket(null); setIsTypePickerOpen(false); setIsFormOpen(true); }}
         />
       )}
 
