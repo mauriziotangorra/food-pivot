@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Falls back to a relative path so the built client works out of the box when
+// served by the same Express server as the API (the production Docker setup) —
+// only local dev needs VITE_API_URL pointed at a separately-running API.
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 const client = axios.create({ baseURL: API_BASE });
 

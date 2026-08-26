@@ -1,8 +1,8 @@
 -- Portale Gestione Crisi IFP - normalized MySQL schema (3NF)
-CREATE DATABASE IF NOT EXISTS ifp_crisis
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE ifp_crisis;
+-- Database creation/selection is handled by src/db/migrate.js (driven by
+-- the DB_NAME env var) so this file stays portable across environments
+-- (local Laragon MySQL vs. a hosted DB like Railway's, which assigns its
+-- own database name).
 
 -- Accounts for the internal Safety/Crisis team.
 CREATE TABLE IF NOT EXISTS users (
